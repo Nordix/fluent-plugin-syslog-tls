@@ -1,9 +1,15 @@
+<<<<<<< HEAD
 #### 2.2.0
 
 * Require at least Fluentd 1.19
 * Require at least Ruby 3.2
 * Support intermediate CA certs as part of the mTLS/client cert chain. Just append them to the `client_cert` file. This requires a semi-recent openssl gem, hence the fluentd and ruby version bumps.
 
+=======
+#### 2.1.2
+
+* Exponential backoff added for failing host.
+>>>>>>> 0240632 (Adding exponential backoff)
 
 #### 2.1.0
 

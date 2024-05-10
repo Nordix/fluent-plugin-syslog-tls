@@ -16,6 +16,69 @@
 require 'socket'
 require 'syslog_tls/logger'
 require 'fluent/plugin/output'
+require 'syslog_tls/host_backoff_specs'
+require 'pp'
+
+$host_backoff_specs_list = []
+
+def add_host_backoff_spec(retries_to_do, host_ip_port)
+  # Check if an element with the same hostIPport already exists
+  return if $host_backoff_specs_list.any? { |spec| spec.hostIPport == host_ip_port }
+
+  # If not, add a new HostBackoffSpecs instance to the global array
+  $host_backoff_specs_list << ::SyslogTls::HostBackoffSpecs.new(retries_to_do, host_ip_port)
+end
+
+def can_write(host_ip_port)
+  if !conatins_host(host_ip_port)
+    add_host_backoff_spec(0, host_ip_port)
+  end
+  begin
+    $host_backoff_specs_list.each do |backoff_specs|
+      if backoff_specs.hostIPport == host_ip_port
+        return backoff_specs.canwrite
+      end
+    end
+  rescue => e
+    return 0
+  end
+  return 1
+end
+
+def increase_retry(host_ip_port)
+  if !conatins_host(host_ip_port)
+    add_host_backoff_spec(0, host_ip_port)
+  end
+  begin
+    $host_backoff_specs_list.each do |backoff_specs|
+      if backoff_specs.hostIPport == host_ip_port
+        backoff_specs.failtowrite
+      end
+    end
+  rescue => e
+    pp "Error in increase_retry: #{e.message}"
+  end
+end
+
+def reset_tries(host_ip_port)
+  if !conatins_host(host_ip_port)
+    add_host_backoff_spec(0, host_ip_port)
+  end
+  $host_backoff_specs_list.each do |backoff_specs|
+    if backoff_specs.hostIPport == host_ip_port
+      backoff_specs.resetRetries
+    end
+  end
+end
+
+def conatins_host(host_ip_port)
+  $host_backoff_specs_list.each do |backoff_specs|
+    if backoff_specs.hostIPport == host_ip_port
+      return true
+    end
+  end
+  return false
+end
 
 module Fluent::Plugin
   class SyslogTlsOutput < Output
@@ -81,6 +144,8 @@ module Fluent::Plugin
         conf_key = "#{key_name}_key"
         @mappings[key_name] = conf[conf_key] if conf.key?(conf_key)
       end
+
+      add_host_backoff_spec(0, conf['host']+":"+conf['port'])
 
       @formatter = formatter_create(conf: conf.elements('format').first, default_type: DEFAULT_FORMAT_TYPE)
     end
