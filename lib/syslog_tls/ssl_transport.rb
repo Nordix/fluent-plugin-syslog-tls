@@ -15,6 +15,7 @@
 
 require 'socket'
 require 'openssl'
+require 'pp'
 
 module SyslogTls
   # Supports SSL connection to remote host
@@ -43,6 +44,7 @@ module SyslogTls
     end
 
     def connect
+      timwnow = Time.now
       @socket = get_ssl_connection
       begin
         begin
@@ -166,6 +168,7 @@ module SyslogTls
     end
 
     def select_with_timeout(tcp, type)
+      host_ip_port = host + ":" + port.to_s
       case type
       when :connect_read
         args = [[tcp], nil, nil, CONNECT_TIMEOUT]
@@ -178,7 +181,24 @@ module SyslogTls
       else
         raise "Unknown select type #{type}"
       end
-      IO.select(*args) || raise("Socket timeout during #{type}")
+      if type.to_s == "connect_write"
+        if can_write(host_ip_port) == 1
+          io_select_return = IO.select(*args)
+          ready_sockets, _, _ = io_select_return
+          if !ready_sockets.empty?
+            reset_tries(host_ip_port)
+            io_select_return
+          else
+            increase_retry(host_ip_port)
+            io_select_return || raise("Socket timeout during #{type}")
+          end
+        # else
+        #   raise("Failed to write #{type}")
+        end
+      else
+        reset_tries(host_ip_port)
+        IO.select(*args) || raise("Socket timeout during #{type}")
+      end
     end
 
     # Forward any methods directly to SSLSocket

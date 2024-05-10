@@ -37,3 +37,4 @@ build/
 
 ## System
 .DS_Store
+.vscode

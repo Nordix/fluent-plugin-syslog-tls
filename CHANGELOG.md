@@ -1,3 +1,7 @@
+#### 2.1.2
+
+* Exponential backoff added for failing host.
+
 #### 2.1.0
 
 * Require Ruby 2.5
