@@ -185,7 +185,7 @@ module SyslogTls
         if can_write(host_ip_port) == 1
           io_select_return = IO.select(*args)
           ready_sockets, _, _ = io_select_return
-          if !ready_sockets.empty?
+          if ready_sockets && !ready_sockets.empty?
             reset_tries(host_ip_port)
             io_select_return
           else

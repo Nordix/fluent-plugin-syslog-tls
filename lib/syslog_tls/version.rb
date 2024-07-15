@@ -14,5 +14,5 @@
 # limitations under the License.
 
 module SyslogTls
-  VERSION = '2.1.2'
+  VERSION = '2.1.3'
 end

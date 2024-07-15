@@ -1,3 +1,7 @@
+#### 2.1.3
+
+* Minor fix for ready_sockets nil check.
+
 #### 2.1.2
 
 * Exponential backoff added for failing host.
