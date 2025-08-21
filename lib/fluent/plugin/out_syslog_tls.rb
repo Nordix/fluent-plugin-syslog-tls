@@ -1,5 +1,5 @@
 # Copyright 2016 Acquia, Inc.
-# Copyright 2016-2019 t.e.morgan.
+# Copyright 2016-2025 t.e.morgan.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -121,8 +121,8 @@ module Fluent::Plugin
 
     def process(tag, es)
       es.each do |time, record|
-        record.each_pair do |_, v|
-          v.force_encoding('utf-8') if v.is_a?(String)
+        record.each_pair do |k, v|
+          record[k] = v.dup.force_encoding('UTF-8') if v.is_a?(String) && v.encoding != Encoding::UTF_8
         end
 
         # Check if severity has been provided in record otherwise use INFO

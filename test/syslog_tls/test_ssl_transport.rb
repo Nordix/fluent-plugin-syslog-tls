@@ -1,5 +1,5 @@
 # Copyright 2016 Acquia, Inc.
-# Copyright 2016-2023 t.e.morgan.
+# Copyright 2016-2025 t.e.morgan.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -38,8 +38,8 @@ class SSLTransportTest < Test::Unit::TestCase
           client.close
         }
         t = SyslogTls::SSLTransport.new("localhost", server.addr[1], ca_cert: false, ssl_version: client_min)
-        t.write("TEST")
-        t.write("TEST2\n")
+        t.write(+"TEST")
+        t.write(+"TEST2\n")
         st.join
       end
       if should_raise
@@ -64,7 +64,7 @@ class SSLTransportTest < Test::Unit::TestCase
     SyslogTls::SSLTransport.stub_any_instance(:get_ssl_connection, client) do
       assert_raises RuntimeError do
         t = SyslogTls::SSLTransport.new("localhost", 33000, max_retries: 3)
-        t.write("TEST\n")
+        t.write(+"TEST\n")
       end
     end
   end
