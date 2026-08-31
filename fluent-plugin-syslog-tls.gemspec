@@ -24,7 +24,7 @@ Gem::Specification.new do |s|
   s.email         = ['tm@iprog.com', 'muhammad.sdil.ghaffar@est.tech']
   s.summary       = %q{Fluent Syslog TLS output plugin}
   s.description   = %q{Syslog TLS output plugin with formatting support, for Fluentd. This is cutom version backoff.}
-  s.homepage      = 'https://github.com/Nordix/fluent-plugin-syslog-tls/tree/add-expo-backoff/adil'
+  s.homepage      = 'https://github.com/Nordix/fluent-plugin-syslog-tls/tree/add-buffer-and-backoff/adil'
   s.license       = 'Apache v2'
   s.files         = `git ls-files`.split($/)
   s.executables   = s.files.grep(%r{^bin/}).map{ |f| File.basename(f) }

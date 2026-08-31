@@ -1,3 +1,9 @@
+#### 2.2.1
+
+* Support Fluentd's standard `<buffer>` section (retry, file vs memory, overflow). Default is a memory buffer with `flush_interval` 5s.
+* Add `tcp_user_timeout` (default 15000 ms). Set `0` to disable.
+* Update gemspec homepage to point to the current Nordix branch.
+
 #### 2.2.0
 
 * Require at least Fluentd 1.19
