@@ -3,6 +3,8 @@
 * Require at least Fluentd 1.19
 * Require at least Ruby 3.2
 * Support intermediate CA certs as part of the mTLS/client cert chain. Just append them to the `client_cert` file. This requires a semi-recent openssl gem, hence the fluentd and ruby version bumps.
+* Support Fluentd's standard `<buffer>` section (retry, file vs memory, overflow). Default is a memory buffer with `flush_interval` 5s.
+* Add `tcp_user_timeout` (default 15000 ms). Set `0` to disable.
 
 #### 2.1.3
 
