@@ -13,64 +13,39 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-require 'socket'
-require 'openssl'
-
 module SSLTestHelper
 
   def ssl_server(min_version: nil, max_version: nil, client_ca_cert: nil)
     @ssl_server ||= begin
+      @root_ca ||= generate_key_pair(name: 'CA A')
+      server     = generate_key_pair(name: 'Server A', signing_pair: @root_ca)
       tcp_server = TCPServer.new("localhost", 33000 + Random.rand(1000))
-      ssl_context = OpenSSL::SSL::SSLContext.new.tap do |ctx|
-        ctx.cert = certificate
-        ctx.key = rsa_key
+      ctx = OpenSSL::SSL::SSLContext.new.tap do |ctx|
+        ctx.cert = server[:cert]
+        ctx.key = server[:key]
         ctx.min_version = min_version if min_version
         ctx.max_version = max_version if max_version
+        ctx.verify_mode = OpenSSL::SSL::VERIFY_PEER
         if client_ca_cert
           ctx.cert_store = OpenSSL::X509::Store.new.tap do |store|
             store.add_cert client_ca_cert
           end
         end
       end
-      OpenSSL::SSL::SSLServer.new(tcp_server, ssl_context)
+      OpenSSL::SSL::SSLServer.new(tcp_server, ctx)
     end
   end
 
   def ssl_client
     tcp = TCPSocket.new("localhost", ssl_server.addr[1])
-    ctx = OpenSSL::SSL::SSLContext.new
-    ctx.set_params(verify_mode: OpenSSL::SSL::VERIFY_NONE)
-    ctx.cert = certificate
-    ctx.key = rsa_key
-    OpenSSL::SSL::SSLSocket.new(tcp, ctx)
-  end
-
-  def rsa_key
-    @rsa_key ||= OpenSSL::PKey::RSA.new(2048)
-  end
-
-  def certificate
-    @cert ||= begin
-      cert = OpenSSL::X509::Certificate.new
-      cert.subject = cert.issuer = OpenSSL::X509::Name.parse("/C=BE/O=Test/OU=Test/CN=Test")
-      cert.not_before = Time.now
-      cert.not_after = Time.now + 365 * 24 * 60 * 60
-      cert.public_key = rsa_key.public_key
-      cert.serial = 0x0
-      cert.version = 2
-
-      ef = OpenSSL::X509::ExtensionFactory.new
-      ef.subject_certificate = cert
-      ef.issuer_certificate = cert
-      cert.extensions = [
-        ef.create_extension("basicConstraints","CA:TRUE", true),
-        ef.create_extension("subjectKeyIdentifier", "hash"),
-        # ef.create_extension("keyUsage", "cRLSign,keyCertSign", true),
-      ]
-      cert.add_extension ef.create_extension("authorityKeyIdentifier", "keyid:always,issuer:always")
-      cert.sign(rsa_key, OpenSSL::Digest::SHA1.new)
-      cert
+    ctx = OpenSSL::SSL::SSLContext.new.tap do |ctx|
+      ctx.verify_hostname = false
+      ctx.verify_mode = OpenSSL::SSL::VERIFY_PEER
+      ctx.cert_store = OpenSSL::X509::Store.new.tap do |store|
+        store.add_cert @root_ca[:cert]
+      end
     end
+    OpenSSL::SSL::SSLSocket.new(tcp, ctx)
   end
 
 

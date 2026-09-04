@@ -1,4 +1,5 @@
 # Copyright 2016 Acquia, Inc.
+# Copyright 2026 t.e.morgan.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,18 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-language: ruby
-sudo: required
-services:
-  - docker
-rvm:
-  - 2.1
-  - 2.2
-  - 2.3.0
-before_install:
-  - 'echo ''gem: --no-ri --no-rdoc'' > ~/.gemrc'
-install:
-  - bundle install --retry 3
-script:
-  - bundle exec rake
+require 'simplecov'
+SimpleCov.start
 
+require 'test/unit'
+require 'fluent/test'
+require 'fluent/test/driver/output'
+require 'minitest/mock'
+require 'minitest/stub_any_instance'
+
+require 'fluent/plugin/out_syslog_tls'
+require 'ssl_test_helper'

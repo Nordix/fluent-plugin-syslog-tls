@@ -13,11 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-require 'helper'
-require 'date'
-require 'syslog_tls/logger'
+require 'test_helper'
 
 class LoggerTest < Test::Unit::TestCase
+
   def test_logger_defaults
     io = StringIO.new
     l = SyslogTls::Logger.new(io, "TOKEN")
@@ -45,4 +44,5 @@ class LoggerTest < Test::Unit::TestCase
     l.close
     assert_true l.closed?
   end
+
 end

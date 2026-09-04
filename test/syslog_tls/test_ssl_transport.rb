@@ -13,9 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-require 'helper'
-require 'ssl'
-require 'syslog_tls/ssl_transport'
+require 'test_helper'
 
 class SSLTransportTest < Test::Unit::TestCase
   include SSLTestHelper
@@ -29,7 +27,6 @@ class SSLTransportTest < Test::Unit::TestCase
     [:TLS1_3, :TLS1_3, :TLS1_3],
   ].each do |(server_min, server_max, client_min, should_raise)|
     define_method "test_#{server_min}-#{server_max}_server_#{client_min}_client" do
-      Thread.report_on_exception = false
       blk = lambda do
         server = ssl_server(min_version: server_min, max_version: server_max)
         st = Thread.new {
@@ -43,12 +40,15 @@ class SSLTransportTest < Test::Unit::TestCase
         st.join
       end
       if should_raise
-        assert_raises OpenSSL::SSL::SSLError, &blk
+        assert_raises OpenSSL::SSL::SSLError do
+          Thread.report_on_exception = false
+          blk.call
+        ensure
+          Thread.report_on_exception = true
+        end
       else
         blk.call
       end
-    ensure
-      Thread.report_on_exception = true
     end
   end
 

@@ -1,5 +1,5 @@
 # Copyright 2016 Acquia, Inc.
-# Copyright 2016-2019 t.e.morgan.
+# Copyright 2016-2026 t.e.morgan.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,19 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-require 'helper'
-require 'ssl'
-require 'date'
-require 'minitest/mock'
-require 'fluent/plugin/out_syslog_tls'
-require 'fluent/test/driver/output'
+require 'test_helper'
 
 class SyslogTlsOutputTest < Test::Unit::TestCase
   include SSLTestHelper
 
   def setup
     Fluent::Test.setup
-    @driver = nil
   end
 
   def driver(conf='')
@@ -85,7 +79,7 @@ class SyslogTlsOutputTest < Test::Unit::TestCase
       instance.process('test', {time.to_i => record})
     end
 
-    assert_equal "<134>1 #{time.to_datetime.rfc3339} - - - - - #{record.to_json.to_s}\n\n", logger.transport.string
+    assert_equal "<134>1 #{time.to_datetime.rfc3339} - - - - - #{record.to_json}\n\n", logger.transport.string
   end
 
   def test_message_headers_mapping
@@ -155,8 +149,8 @@ class SyslogTlsOutputTest < Test::Unit::TestCase
       instance.process('test', {time.to_i => record})
     end
 
-    formatted_time = time.dup.utc.strftime("%Y-%m-%dT%H:%M:%SZ")
-    assert_equal "<134>1 #{time.to_datetime.rfc3339} - - - - [TOKEN] #{formatted_time}\ttest\t#{record.to_json.to_s}\n\n", logger.transport.string
+    formatted_time = time.dup.utc.iso8601
+    assert_equal "<134>1 #{time.to_datetime.rfc3339} - - - - [TOKEN] #{formatted_time}\ttest\t#{record.to_json}\n\n", logger.transport.string
   end
 
   def test_ssl
@@ -164,11 +158,11 @@ class SyslogTlsOutputTest < Test::Unit::TestCase
     record = sample_record
 
     server = ssl_server
-    st = Thread.new {
-        client = server.accept
-        assert_equal "<134>1 #{time.to_datetime.rfc3339} host app #{$$} 1000 [1234567890] #{record.to_json.to_s}\n", client.gets
-        client.close
-    }
+    st = Thread.new do
+      client = server.accept
+      assert_equal "<134>1 #{time.to_datetime.rfc3339} host app #{$$} 1000 [1234567890] #{record.to_json}\n", client.gets
+      client.close
+    end
 
     config = %{
       host   localhost

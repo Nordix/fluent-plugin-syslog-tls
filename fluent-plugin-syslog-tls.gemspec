@@ -25,7 +25,7 @@ Gem::Specification.new do |s|
   s.summary       = %q{Fluent Syslog TLS output plugin}
   s.description   = %q{Syslog TLS output plugin with formatting support, for Fluentd}
   s.homepage      = 'https://github.com/zarqman/fluent-plugin-syslog-tls'
-  s.license       = 'Apache v2'
+  s.license       = 'Apache-2.0'
   s.files         = `git ls-files`.split($/)
   s.executables   = s.files.grep(%r{^bin/}).map{ |f| File.basename(f) }
   s.test_files    = s.files.grep(%r{^(test|spec|features)/})
@@ -34,10 +34,10 @@ Gem::Specification.new do |s|
 
   s.add_runtime_dependency 'fluentd', '~> 1.19'
 
-  s.add_development_dependency 'minitest', '~> 5.8'
+  s.add_development_dependency 'minitest', '~> 6'
+  s.add_development_dependency 'minitest-mock', '~> 5.27'
   s.add_development_dependency 'minitest-stub_any_instance', '~> 1.0.0'
   s.add_development_dependency 'rake'
   s.add_development_dependency 'test-unit', '~> 3.1'
-  s.add_development_dependency 'webmock', '~> 3.0'
-  s.add_development_dependency 'simplecov', '~> 0.11'
+  s.add_development_dependency 'simplecov', '~> 1'
 end

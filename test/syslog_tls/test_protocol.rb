@@ -13,11 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-require 'helper'
-require 'date'
-require 'syslog_tls/protocol'
+require 'test_helper'
 
 class ProtocolTest < Test::Unit::TestCase
+
   def test_header_defaults
     h = SyslogTls::Header.new
 
@@ -147,4 +146,5 @@ class ProtocolTest < Test::Unit::TestCase
     m.msg = "MSG"
     assert_equal "<134>1 #{m.header.timestamp.to_datetime.rfc3339} - - - - [TEST_ID][TEST_ID2] MSG\n", m.to_s
   end
+
 end
