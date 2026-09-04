@@ -1,5 +1,5 @@
 # Copyright 2016 Acquia, Inc.
-# Copyright 2016-2023 t.e.morgan.
+# Copyright 2016-2026 t.e.morgan.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -114,8 +114,12 @@ module SyslogTls
         ctx.ca_file = ca_cert
       end
 
-      ctx.cert = OpenSSL::X509::Certificate.new(File.read(client_cert)) if client_cert
-      ctx.key = OpenSSL::PKey::read(File.read(client_key)) if client_key
+      if client_cert
+        cert, *chain = OpenSSL::X509::Certificate.load_file(client_cert)
+        ctx.cert = cert
+        ctx.extra_chain_cert = chain
+      end
+      ctx.key = OpenSSL::PKey.read(File.binread(client_key)) if client_key
       socket = OpenSSL::SSL::SSLSocket.new(tcp, ctx)
       socket.hostname = host
       socket.sync_close = true
@@ -185,5 +189,6 @@ module SyslogTls
     def method_missing(method_sym, *arguments, &block)
       @socket.send(method_sym, *arguments, &block)
     end
+
   end
 end

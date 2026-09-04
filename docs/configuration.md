@@ -37,7 +37,7 @@ Some services require a token to identify the account. Example: `ABABABABABABA@9
 
 ### client_cert
 
-Optionally path to client certificate for TLS connection. Example: `/path/to/crt/file.crt`
+Optionally path to client certificate for TLS connection. Example: `/path/to/crt/file.crt`. To include intermediate certs, contents must be PEM formatted and the client cert must be first, followed by the intermediate(s).
 
 ### client_key
 

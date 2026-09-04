@@ -1,5 +1,5 @@
 # Copyright 2016 Acquia, Inc.
-# Copyright 2016-2025 t.e.morgan.
+# Copyright 2016-2026 t.e.morgan.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -52,6 +52,39 @@ class SSLTransportTest < Test::Unit::TestCase
     end
   end
 
+  def test_mtls_client
+    root_ca = generate_key_pair(name: 'CA 1')
+    client  = generate_key_pair(name: 'Client 1', signing_pair: root_ca)
+    server = ssl_server(client_ca_cert: root_ca[:cert])
+    st = Thread.new do
+      client = server.accept
+      assert_equal "TEST\n", client.gets
+      client.close
+    end
+    write_key_pair(client) do |client_cert, client_key|
+      t = SyslogTls::SSLTransport.new("localhost", server.addr[1], ca_cert: false, client_cert:, client_key:)
+      t.write(+"TEST\n")
+    end
+    st.join
+  end
+
+  def test_mtls_client_with_intermediate
+    root_ca = generate_key_pair(name: 'CA 1')
+    int_ca  = generate_key_pair(name: 'CA 2', signing_pair: root_ca, ca: true)
+    client  = generate_key_pair(name: 'Client 1', signing_pair: int_ca)
+    server = ssl_server(client_ca_cert: root_ca[:cert])
+    st = Thread.new do
+      client = server.accept
+      assert_equal "TEST\n", client.gets
+      client.close
+    end
+    write_key_pair(client, chain: [int_ca]) do |client_cert, client_key|
+      t = SyslogTls::SSLTransport.new("localhost", server.addr[1], ca_cert: false, client_cert:, client_key:)
+      t.write(+"TEST\n")
+    end
+    st.join
+  end
+
   def test_retry
     client = Object.new
     def client.connect_nonblock
@@ -68,4 +101,5 @@ class SSLTransportTest < Test::Unit::TestCase
       end
     end
   end
+
 end
